@@ -1,12 +1,245 @@
-import {useMemo,useState} from "react";
-import {BookOpen,Check,ChevronLeft,ChevronRight,GraduationCap,Headphones,Home,Languages,ListChecks,RotateCcw,ScrollText,Trophy,Volume2} from "lucide-react";
-import {hanzi,lessons,quiz,sentences,type Item} from "./data";
-type View="home"|"pronunciation"|"lesson2"|"lesson3"|"lesson4"|"hanzi"|"sentences"|"quiz";
-const speak=(text:string)=>{if(!("speechSynthesis" in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="zh-CN";u.rate=.78;window.speechSynthesis.speak(u)};
-export default function App(){const[view,setView]=useState<View>("home");const[card,setCard]=useState(0);const[revealed,setRevealed]=useState(false);const nav=[["home","홈",Home],["pronunciation","발음",Headphones],["lesson2","2과",BookOpen],["lesson3","3과",Languages],["lesson4","4과",GraduationCap],["hanzi","한자",ScrollText],["sentences","문장",ListChecks],["quiz","퀴즈",Trophy]] as [View,string,typeof Home][];return <div className="app"><header><button className="brand" onClick={()=>setView("home")}><b>中</b><span><strong>생활 중국어</strong><small>기말고사 완전 정복</small></span></button><nav>{nav.map(([id,label,Icon])=><button className={view===id?"on":""} key={id} onClick={()=>setView(id)}><Icon size={16}/>{label}</button>)}</nav></header><main>{view==="home"&&<HomePage go={setView}/>} {view==="pronunciation"&&<Pronunciation/>}{view.startsWith("lesson")&&<Lesson data={lessons[view as keyof typeof lessons]}/>} {view==="hanzi"&&<section className="page"><Title tag="한자 쓰기" title="필수 한자 카드" sub="보충자료 14~15쪽의 38개 한자를 반복해서 확인하세요."/><div className="flash"><button onClick={()=>{setCard((card-1+hanzi.length)%hanzi.length);setRevealed(false)}}><ChevronLeft/></button><article onClick={()=>setRevealed(!revealed)}><strong>{hanzi[card].hanzi}</strong>{revealed?<><b>{hanzi[card].pinyin}</b><p>{hanzi[card].meaning}</p></>:<p>병음과 뜻을 떠올린 뒤 누르세요.</p>}</article><button onClick={()=>{setCard((card+1)%hanzi.length);setRevealed(false)}}><ChevronRight/></button></div><div className="hanziGrid">{hanzi.map((h,i)=><button key={h.hanzi} onClick={()=>{setCard(i);setRevealed(true)}}><strong>{h.hanzi}</strong><span>{h.pinyin}</span><small>{h.meaning}</small></button>)}</div></section>}{view==="sentences"&&<Sentences/>}{view==="quiz"&&<Quiz/>}</main></div>}
-function Title({tag,title,sub}:{tag:string;title:string;sub:string}){return <div className="title"><span>{tag}</span><h1>{title}</h1><p>{sub}</p></div>}
-function HomePage({go}:{go:(v:View)=>void}){const cards:[[View,string,string,typeof Home],...[View,string,string,typeof Home][]]=[["pronunciation","발음 핵심 규칙","성조, 성모·운모, 표기 규칙",Headphones],["lesson2","2과 인사 표현","你好, 谢谢, 对不起",BookOpen],["lesson3","3과 이름과 국적","叫什么名字, 哪国人",Languages],["lesson4","4과 가족과 나이","有·没有, 几岁, 年级",GraduationCap],["hanzi","필수 한자 38개","시험 쓰기 범위 반복",ScrollText],["sentences","문장 쓰기 20개","수행평가 연습지 기준",ListChecks]];return <><section className="hero"><div><span className="pill">업로드 자료 맞춤형</span><h1>시험에 나오는 것만<br/><em>빠르게, 정확하게.</em></h1><p>보충자료 16쪽과 생활 중국어 교과서 2~4과를 기준으로 발음, 회화, 한자와 문장 쓰기를 한 번에 정리했습니다.</p><button className="primary" onClick={()=>go("lesson2")}>2과부터 시작 <ChevronRight size={18}/></button></div><aside><b>期末</b><strong>기말 대비</strong><span>발음 · 2과 · 3과 · 4과</span></aside></section><section className="cards">{cards.map(([id,t,d,Icon])=><button key={id} onClick={()=>go(id)}><Icon/><span>STUDY</span><h2>{t}</h2><p>{d}</p></button>)}</section></>}
-function Pronunciation(){return <section className="page"><Title tag="1과 운모 보충" title="발음 핵심 규칙" sub="형성평가에 나온 성조·성모·운모와 표기 규칙입니다."/><div className="tones">{[["제1성","ā","높고 평평하게"],["제2성","á","중간에서 위로"],["제3성","ǎ","낮췄다가 올리기"],["제4성","à","높은 데서 내리기"]].map(x=><article key={x[0]}><strong>{x[1]}</strong><h3>{x[0]}</h3><p>{x[2]}</p></article>)}</div><div className="panel"><h2>성모 21개</h2><div className="chips">{"b p m f d t n l g k h j q x zh ch sh r z c s".split(" ").map(x=><span key={x}>{x}</span>)}</div></div><div className="rules"><article><h3>j·q·x 뒤의 ü</h3><p>점 두 개를 생략하여 ju, que, xun처럼 씁니다.</p></article><article><h3>성모가 없는 i·u·ü</h3><p>i는 y, u는 w, ü는 yu로 표기합니다.</p></article><article><h3>iou·uei·uen</h3><p>성모가 붙으면 가운데 모음을 생략해 liu, dui, kun으로 씁니다.</p></article><article><h3>성조 기호 위치</h3><p>a가 우선이며, 없으면 o/e에 붙입니다. iu·ui는 뒤 글자에 붙입니다.</p></article></div></section>}
-function Lesson({data}:{data:{title:string;subtitle:string;expressions:Item[];rules:string[]}}){return <section className="page"><Title tag="단원정리" title={data.title} sub={data.subtitle}/><div className="expressions">{data.expressions.map(x=><article key={x.hanzi}><button onClick={()=>speak(x.hanzi)}><Volume2 size={16}/></button><strong>{x.hanzi}</strong><b>{x.pinyin}</b><p>{x.meaning}</p></article>)}</div><div className="panel"><h2>문법 규칙</h2><ol>{data.rules.map(r=><li key={r}>{r}</li>)}</ol></div></section>}
-function Sentences(){const[open,setOpen]=useState<number[]>([]);return <section className="page"><Title tag="기말 대비 종작 연습" title="문장 쓰기 20개" sub="한국어만 보고 먼저 쓴 뒤 정답을 확인하세요."/><div className="sentenceList">{sentences.map((s,i)=><article key={s.hanzi}><span>{String(i+1).padStart(2,"0")}</span><div><h3>{s.meaning}</h3>{open.includes(i)&&<><strong>{s.hanzi}</strong><b>{s.pinyin}</b></>}</div><button onClick={()=>setOpen(open.includes(i)?open.filter(x=>x!==i):[...open,i])}>{open.includes(i)?"가리기":"정답"}</button></article>)}</div></section>}
-function Quiz(){const qs=useMemo(()=>[...quiz].sort(()=>Math.random()-.5),[]);const[i,setI]=useState(0),[pick,setPick]=useState(""),[score,setScore]=useState(0),[done,setDone]=useState(false);if(done)return <section className="result"><Trophy size={54}/><span>QUIZ COMPLETE</span><h1>{score*10}점</h1><p>{score>=7?"좋습니다. 시험 준비가 잘 되어 있습니다.":"틀린 단원을 한 번 더 복습해 보세요."}</p><button className="primary" onClick={()=>window.location.reload()}><RotateCcw size={17}/> 다시 시작</button></section>;const q=qs[i];return <section className="quiz page"><Title tag="실전 퀴즈" title="최종 점검" sub={`${i+1} / ${qs.length} 문제`}/><div className="quizBox"><h2>{q[0]}</h2>{q[1].map(o=><button key={o} className={pick?(o===q[2]?"correct":o===pick?"wrong":""):""} onClick={()=>{if(!pick){setPick(o);if(o===q[2])setScore(score+1)}}}>{o}{pick&&o===q[2]&&<Check size={18}/>}</button>)}{pick&&<button className="primary next" onClick={()=>{if(i===qs.length-1)setDone(true);else{setI(i+1);setPick("")}}}>다음 <ChevronRight size={17}/></button>}</div></section>}
+import { useMemo, useState } from "react";
+import { Howl } from "howler";
+import {
+  BookOpen,
+  Check,
+  ChevronRight,
+  GraduationCap,
+  Headphones,
+  Home,
+  Languages,
+  ListChecks,
+  RotateCcw,
+  ScrollText,
+  Trophy,
+  Volume2,
+} from "lucide-react";
+import {
+  hanziByLesson,
+  lessons,
+  quiz,
+  sentences,
+  type DialogueLine,
+  type HanziItem,
+  type Lesson,
+} from "./data";
+
+type View = "home" | "pronunciation" | "lesson2" | "lesson3" | "lesson4" | "hanzi" | "sentences" | "quiz";
+type LessonKey = "lesson2" | "lesson3" | "lesson4";
+
+let currentAudio: Howl | null = null;
+
+function playChinese(text: string) {
+  currentAudio?.stop();
+  const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(text)}&type=2`;
+  currentAudio = new Howl({
+    src: [audioUrl],
+    html5: true,
+    format: ["mp3"],
+    volume: 1,
+  });
+  currentAudio.play();
+}
+
+export default function App() {
+  const [view, setView] = useState<View>("home");
+  const nav = [
+    ["home", "홈", Home],
+    ["pronunciation", "발음", Headphones],
+    ["lesson2", "2과", BookOpen],
+    ["lesson3", "3과", Languages],
+    ["lesson4", "4과", GraduationCap],
+    ["hanzi", "한자", ScrollText],
+    ["sentences", "문장", ListChecks],
+    ["quiz", "퀴즈", Trophy],
+  ] as [View, string, typeof Home][];
+
+  return (
+    <div className="app">
+      <header>
+        <button className="brand" onClick={() => setView("home")}>
+          <b>中</b>
+          <span><strong>생활 중국어</strong><small>기말고사 완전 정복</small></span>
+        </button>
+        <nav>
+          {nav.map(([id, label, Icon]) => (
+            <button className={view === id ? "on" : ""} key={id} onClick={() => setView(id)}>
+              <Icon size={16} />{label}
+            </button>
+          ))}
+        </nav>
+      </header>
+      <main>
+        {view === "home" && <HomePage go={setView} />}
+        {view === "pronunciation" && <Pronunciation />}
+        {view.startsWith("lesson") && <LessonPage data={lessons[view as LessonKey]} />}
+        {view === "hanzi" && <HanziPage />}
+        {view === "sentences" && <SentencesPage />}
+        {view === "quiz" && <QuizPage />}
+      </main>
+    </div>
+  );
+}
+
+function Title({ tag, title, sub }: { tag: string; title: string; sub: string }) {
+  return <div className="title"><span>{tag}</span><h1>{title}</h1><p>{sub}</p></div>;
+}
+
+function HomePage({ go }: { go: (view: View) => void }) {
+  const cards: [View, string, string, typeof Home][] = [
+    ["pronunciation", "발음 핵심 규칙", "성조, 성모·운모, 표기 규칙", Headphones],
+    ["lesson2", "2과 본문", "인사 · 감사 · 사과", BookOpen],
+    ["lesson3", "3과 본문", "이름 · 국적 · 인물 묘사", Languages],
+    ["lesson4", "4과 본문", "가족 · 나이 · 학년", GraduationCap],
+    ["hanzi", "단원별 한자 38개", "뜻 · 한어병음 · 음성", ScrollText],
+    ["sentences", "문장 쓰기 20개", "기말 대비 종작 연습", ListChecks],
+  ];
+  return <>
+    <section className="hero">
+      <div>
+        <span className="pill">학습지·교과서 맞춤형</span>
+        <h1>본문은 본문대로,<br /><em>한자는 빠짐없이.</em></h1>
+        <p>교과서 2~4과의 본문 1·2를 대화 순서 그대로 정리하고, 학습지의 시험 한자 38개를 단원별로 나눴습니다.</p>
+        <button className="primary" onClick={() => go("lesson2")}>2과 본문 시작 <ChevronRight size={18} /></button>
+      </div>
+      <aside><b>期末</b><strong>기말 대비</strong><span>본문 · 한자 · 음성 · 퀴즈</span></aside>
+    </section>
+    <section className="cards">
+      {cards.map(([id, title, desc, Icon]) => (
+        <button key={id} onClick={() => go(id)}>
+          <Icon /><span>STUDY</span><h2>{title}</h2><p>{desc}</p>
+        </button>
+      ))}
+    </section>
+  </>;
+}
+
+function Pronunciation() {
+  return <section className="page">
+    <Title tag="1과 발음 보충" title="발음 핵심 규칙" sub="학습지 형성평가에 나온 성조·성모·운모와 표기 규칙입니다." />
+    <div className="tones">
+      {[["제1성", "ā", "높고 평평하게"], ["제2성", "á", "중간에서 위로"], ["제3성", "ǎ", "낮췄다가 올리기"], ["제4성", "à", "높은 데서 내리기"]].map(([name, mark, desc]) => (
+        <article key={name}><strong>{mark}</strong><h3>{name}</h3><p>{desc}</p></article>
+      ))}
+    </div>
+    <div className="panel"><h2>성모 21개</h2><div className="chips">{"b p m f d t n l g k h j q x zh ch sh r z c s".split(" ").map(x => <span key={x}>{x}</span>)}</div></div>
+    <div className="rules">
+      <article><h3>j·q·x 뒤의 ü</h3><p>점 두 개를 생략하여 ju, que, xun처럼 씁니다.</p></article>
+      <article><h3>성모가 없는 i·u·ü</h3><p>i는 y, u는 w, ü는 yu로 표기합니다.</p></article>
+      <article><h3>iou·uei·uen</h3><p>성모가 붙으면 가운데 모음을 생략해 liu, dui, kun으로 씁니다.</p></article>
+      <article><h3>성조 기호 위치</h3><p>a가 우선이며, 없으면 o/e에 붙입니다. iu·ui는 뒤 글자에 붙입니다.</p></article>
+    </div>
+  </section>;
+}
+
+function LessonPage({ data }: { data: Lesson }) {
+  return <section className="page">
+    <Title tag="교과서 본문" title={data.title} sub={data.subtitle} />
+    <DialogueBlock title={data.body1Title} lines={data.body1} />
+    <DialogueBlock title={data.body2Title} lines={data.body2} />
+    <section className="lesson-section">
+      <div className="section-heading"><span>표현 다지기</span><h2>함께 알아둘 표현</h2></div>
+      <div className="expression-grid">
+        {data.keyExpressions.map(item => <StudyCard key={item.hanzi} item={item} compact />)}
+      </div>
+    </section>
+    <div className="panel"><h2>본문 문법·발음 포인트</h2><ol>{data.rules.map(rule => <li key={rule}>{rule}</li>)}</ol></div>
+  </section>;
+}
+
+function DialogueBlock({ title, lines }: { title: string; lines: DialogueLine[] }) {
+  return <section className="dialogue-block">
+    <div className="section-heading"><span>TEXTBOOK</span><h2>{title}</h2></div>
+    <div className="dialogue-list">
+      {lines.map((line, index) => (
+        <article key={`${line.hanzi}-${index}`}>
+          <div className="speaker">{line.speaker}</div>
+          <div className="dialogue-text">
+            <strong>{line.hanzi}</strong>
+            <b>{line.pinyin}</b>
+            <p>{line.meaning}</p>
+          </div>
+          <button className="audio-button" onClick={() => playChinese(line.hanzi)} aria-label={`${line.hanzi} 발음 듣기`}>
+            <Volume2 size={22} />
+          </button>
+        </article>
+      ))}
+    </div>
+  </section>;
+}
+
+function HanziPage() {
+  const [lesson, setLesson] = useState<LessonKey>("lesson2");
+  const lessonMeta: Record<LessonKey, { label: string; count: number }> = {
+    lesson2: { label: "2과", count: 11 },
+    lesson3: { label: "3과", count: 15 },
+    lesson4: { label: "4과", count: 12 },
+  };
+  return <section className="page">
+    <Title tag="학습지 한자 암기" title="단원별 시험 한자 38개" sub="학습지에 정리된 순서와 내용을 그대로 반영했습니다. 각 카드에서 뜻·한어병음·음성을 모두 확인할 수 있습니다." />
+    <div className="lesson-tabs">
+      {(Object.keys(lessonMeta) as LessonKey[]).map(key => (
+        <button key={key} className={lesson === key ? "active" : ""} onClick={() => setLesson(key)}>
+          <strong>{lessonMeta[key].label}</strong><span>{lessonMeta[key].count}개</span>
+        </button>
+      ))}
+    </div>
+    <div className="hanzi-summary"><b>{lessonMeta[lesson].label}</b><span>시험 한자 {lessonMeta[lesson].count}개</span></div>
+    <div className="hanzi-grid-large">
+      {hanziByLesson[lesson].map(item => <StudyCard key={item.hanzi} item={item} />)}
+    </div>
+  </section>;
+}
+
+function StudyCard({ item, compact = false }: { item: HanziItem; compact?: boolean }) {
+  return <article className={compact ? "study-card compact" : "study-card"}>
+    <button className="audio-button" onClick={() => playChinese(item.hanzi)} aria-label={`${item.hanzi} 발음 듣기`}><Volume2 size={22} /></button>
+    <strong>{item.hanzi}</strong>
+    <div className="study-fields">
+      <div><span>한어병음</span><b>{item.pinyin}</b></div>
+      <div><span>뜻</span><p>{item.meaning}</p></div>
+    </div>
+  </article>;
+}
+
+function SentencesPage() {
+  const [open, setOpen] = useState<number[]>([]);
+  return <section className="page">
+    <Title tag="기말 대비 종작 연습" title="문장 쓰기 20개" sub="한국어만 보고 먼저 쓴 뒤 정답과 음성을 확인하세요." />
+    <div className="sentence-list">
+      {sentences.map((item, index) => {
+        const isOpen = open.includes(index);
+        return <article key={item.hanzi}>
+          <span>{String(index + 1).padStart(2, "0")}</span>
+          <div><h3>{item.meaning}</h3>{isOpen && <><strong>{item.hanzi}</strong><b>{item.pinyin}</b></>}</div>
+          <div className="sentence-actions">
+            {isOpen && <button className="icon-only" onClick={() => playChinese(item.hanzi)}><Volume2 size={19} /></button>}
+            <button onClick={() => setOpen(isOpen ? open.filter(x => x !== index) : [...open, index])}>{isOpen ? "가리기" : "정답"}</button>
+          </div>
+        </article>;
+      })}
+    </div>
+  </section>;
+}
+
+function QuizPage() {
+  const questions = useMemo(() => [...quiz].sort(() => Math.random() - 0.5), []);
+  const [index, setIndex] = useState(0);
+  const [picked, setPicked] = useState("");
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  if (done) return <section className="result"><Trophy size={54} /><span>QUIZ COMPLETE</span><h1>{score * 10}점</h1><p>{score >= 7 ? "좋습니다. 시험 준비가 잘 되어 있습니다." : "틀린 단원을 한 번 더 복습해 보세요."}</p><button className="primary" onClick={() => window.location.reload()}><RotateCcw size={17} /> 다시 시작</button></section>;
+  const question = questions[index];
+  return <section className="quiz page">
+    <Title tag="실전 퀴즈" title="최종 점검" sub={`${index + 1} / ${questions.length} 문제`} />
+    <div className="quiz-box">
+      <h2>{question[0]}</h2>
+      {question[1].map(option => (
+        <button key={option} className={picked ? (option === question[2] ? "correct" : option === picked ? "wrong" : "") : ""} onClick={() => { if (!picked) { setPicked(option); if (option === question[2]) setScore(score + 1); } }}>
+          {option}{picked && option === question[2] && <Check size={18} />}
+        </button>
+      ))}
+      {picked && <button className="primary next" onClick={() => { if (index === questions.length - 1) setDone(true); else { setIndex(index + 1); setPicked(""); } }}>다음 <ChevronRight size={17} /></button>}
+    </div>
+  </section>;
+}
