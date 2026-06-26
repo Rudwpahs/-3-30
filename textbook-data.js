@@ -1,0 +1,1 @@
+window.TextbookData={textbookPages:[...window.TextbookChunk1,...window.TextbookChunk2,...window.TextbookChunk3,...window.TextbookChunk4]};
