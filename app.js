@@ -13,9 +13,10 @@ let currentHanziLesson='lesson2';
 let tts=null, ttsLoading=null;
 
 function esc(s=''){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function normalizeSource(s=''){const map={'å':'ī','ã':'ā','â':'ǎ','ç':'ē','ê':'ě','î':'ǐ','õ':'ō','ô':'ǒ','ñ':'ū','û':'ǔ'};return String(s).replace(/[åãâçêîõôñû]/g,c=>map[c]).replace(/([A-Za-zÀ-ž])8([A-Za-zÀ-ž])/g,"$1'$2").replace(/°/g,'。');}
 function title(tag,t,sub){return `<div class="title"><span>${esc(tag)}</span><h1>${esc(t)}</h1><p>${esc(sub)}</p></div>`;}
 function renderNav(){nav.innerHTML=views.map(([id,label,icon])=>`<button class="${currentView===id?'on':''}" onclick="setView('${id}')"><b>${icon}</b>${label}</button>`).join('');}
-function setView(v){currentView=v;location.hash=v;renderNav();render();scrollTo({top:0,behavior:'smooth'});}
+function setView(v){currentView=v;location.hash=v;renderNav();render();ensureTts();scrollTo({top:0,behavior:'smooth'});}
 window.setView=setView;
 
 async function ensureTts(){
@@ -47,7 +48,7 @@ window.speak=speak;
 function audioButton(text){return `<button class="audio-button" onclick="speak('${String(text).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')" title="중국어 발음 듣기" aria-label="중국어 발음 듣기">🔊</button>`;}
 function studyCard(item,compact=false){return `<article class="study-card ${compact?'compact':''}">${audioButton(item.hanzi)}<strong>${esc(item.hanzi)}</strong><div class="study-fields"><div><span>한어병음</span><b>${esc(item.pinyin)}</b></div><div><span>뜻</span><p>${esc(item.meaning)}</p></div></div></article>`;}
 function dialogue(line){return `<article><div class="speaker">${esc(line.speaker)}</div><div class="dialogue-text"><strong>${esc(line.hanzi)}</strong><b>${esc(line.pinyin)}</b><p>${esc(line.meaning)}</p></div>${audioButton(line.hanzi)}</article>`;}
-function sourceDetails(p,label){return `<details><summary><b>${label} ${p.page}쪽</b><span>${esc(p.title)}</span></summary><pre>${esc(p.text)}</pre></details>`;}
+function sourceDetails(p,label){return `<details><summary><b>${label} ${p.page}쪽</b><span>${esc(p.title)}</span></summary><pre>${esc(normalizeSource(p.text))}</pre></details>`;}
 
 function renderHome(){
   const cards=[
@@ -81,4 +82,4 @@ function renderQuiz(){if(!quizQuestions.length)quizQuestions=[...quiz].sort(()=>
 function answerQuiz(btn,val){if(quizPicked)return;quizPicked=true;const right=quizQuestions[quizIndex][2];if(val===right){quizScore++;btn.classList.add('correct')}else btn.classList.add('wrong');[...document.querySelectorAll('.quiz-box>button:not(.next)')].forEach(b=>{if(b.textContent.trim()===right)b.classList.add('correct')});document.getElementById('quizNext').hidden=false;}
 window.startQuiz=startQuiz;window.answerQuiz=answerQuiz;
 function render(){if(currentView==='home')renderHome();else if(currentView==='worksheet')renderWorksheet();else if(currentView.startsWith('lesson'))renderLesson(currentView);else if(currentView==='hanzi')renderHanzi();else if(currentView==='sentences')renderSentences();else if(currentView==='quiz')renderQuiz();}
-const hash=location.hash.slice(1);if(views.some(v=>v[0]===hash))currentView=hash;renderNav();render();
+const hash=location.hash.slice(1);if(views.some(v=>v[0]===hash))currentView=hash;renderNav();render();ensureTts();
