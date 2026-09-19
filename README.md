@@ -1,46 +1,58 @@
-# 생활 중국어 기말고사 정리
+<div align="center">
 
-중국어 시험 공부를 하면서 교과서와 보충자료를 계속 넘겨보는 게 불편해서 만든 학습용 웹앱입니다. 시험 범위에서 실제로 외워야 할 내용만 모으고, 바로 문제를 풀어볼 수 있게 구성했습니다.
+# 🇨🇳 생활 중국어 기말고사 정리
 
-## 들어 있는 내용
+### 시험 범위만 모아서, 바로 외우고 바로 풀기.
 
-- 1과 발음 보충: 성조, 성모, 운모, 한어병음 표기 규칙
-- 2과 인사·감사·사과
-- 3과 이름·국적·인물 묘사와 나라 이름
-- 4과 가족·나이·학년·숫자
-- 필수 한자 카드 38개
-- 수행평가 문장 쓰기 20개
-- 실전 퀴즈와 중국 개관 암기 카드
-- 브라우저에 학습 진도 저장
+<p>
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-Study_App-3178C6?logo=typescript&logoColor=white">
+  <img alt="LocalStorage" src="https://img.shields.io/badge/storage-localStorage-f59e0b">
+  <img alt="GitHub Pages" src="https://img.shields.io/badge/deploy-GitHub_Pages-222222?logo=github&logoColor=white">
+</p>
 
-## 어떻게 동작하나
+[Contents](#contents) · [Learning Flow](#learning-flow) · [Run](#run)
 
-이 앱은 서버 없이 브라우저 안에서 끝납니다.
+</div>
 
-```text
-교과서·보충자료에서 시험 범위 추출
-        ↓
-단원별 개념 / 한자 / 문장 / 문제로 정리
-        ↓
-사용자가 단원 또는 퀴즈 선택
-        ↓
-입력한 답과 정답 비교
-        ↓
-결과와 진행도를 화면에 반영
-        ↓
-localStorage에 현재 학습 상태 저장
+---
+
+교과서와 보충자료를 계속 넘겨보는 대신, **시험에 실제로 필요한 내용만 작은 학습 단위로 묶어 반복하기 위해 만든 웹앱**입니다.
+
+## Contents
+
+| Area | Included |
+|---|---|
+| 발음 | 성조, 성모, 운모, 한어병음 표기 규칙 |
+| 회화 | 인사·감사·사과, 이름·국적·인물 묘사 |
+| 생활 표현 | 가족·나이·학년·숫자 |
+| 암기 | 필수 한자 카드 38개 |
+| 쓰기 | 수행평가 문장 20개 |
+| 연습 | 실전 퀴즈, 중국 개관 암기 카드 |
+| Progress | 브라우저 학습 진도 저장 |
+
+## Learning flow
+
+```mermaid
+flowchart LR
+    A[교과서 / 보충자료] --> B[시험 범위 추출]
+    B --> C[개념 · 한자 · 문장 · 문제]
+    C --> D[단원 / 퀴즈 선택]
+    D --> E[답 입력]
+    E --> F[정답 비교]
+    F --> G[진도 갱신]
+    G --> H[localStorage]
 ```
 
-핵심은 복잡한 추천 알고리즘이 아니라 **시험 범위를 작은 학습 단위로 나누고, 풀었던 상태를 브라우저에 계속 남기는 것**입니다. 그래서 새로고침해도 어디까지 공부했는지 다시 찾을 필요가 없습니다.
+복잡한 추천 모델보다 **시험 범위를 잘게 나누고 학습 상태를 계속 남기는 것**이 핵심입니다. 새로고침해도 어디까지 공부했는지 다시 찾을 필요가 없습니다.
 
-## 실행
+## Run
 
 ```bash
 npm install
 npm run dev
 ```
 
-프로덕션 빌드:
+Production build:
 
 ```bash
 npm run build
@@ -48,9 +60,6 @@ npm run build
 
 `main` 브랜치에 푸시하면 GitHub Actions를 통해 GitHub Pages에 배포할 수 있습니다.
 
-## 기술
+## Stack
 
-- TypeScript
-- 정적 웹앱
-- localStorage
-- GitHub Pages
+`TypeScript` · Static Web App · `localStorage` · GitHub Pages
